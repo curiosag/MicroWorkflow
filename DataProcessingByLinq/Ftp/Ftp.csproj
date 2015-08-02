@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{20276125-1CFC-47AA-ABB4-51F93BE2586A}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Ftp</RootNamespace>
+    <AssemblyName>Ftp</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>full</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="BaseFtp.cs" />
+    <Compile Include="Constants.cs" />
+    <Compile Include="FileBasedFtpEmulator.cs" />
+    <Compile Include="Ftp.cs" />
+    <Compile Include="FtpException.cs" />
+    <Compile Include="FtpExceptionType.cs" />
+    <Compile Include="FtpFileProperties.cs" />
+    <Compile Include="FtpFileType.cs" />
+    <Compile Include="FtpOperation.cs" />
+    <Compile Include="FtpSettings.cs" />
+    <Compile Include="OnFtpFinishedCallback.cs" />
+    <Compile Include="Stopwatch.cs" />
+    <Compile Include="TimedOutExecution.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <None Include="Ftp.userprefs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Base\Base.csproj">
+      <Project>{9591D310-393E-4E87-8B5C-568D8901C8E7}</Project>
+      <Name>Base</Name>
+    </ProjectReference>
+  </ItemGroup>
+</Project>

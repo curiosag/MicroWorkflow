@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <ProjectGuid>{71CF39DF-20CE-47E2-BAC5-5FC099F3C098}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>DataProcessingByLinq</RootNamespace>
+    <AssemblyName>DataProcessingByLinq</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <DebugType>full</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <Compile Include="Program.cs" />
+    <Compile Include="Const.cs" />
+    <Compile Include="DrAtom.cs" />
+    <Compile Include="DrAtomCheckTkResult.cs" />
+    <Compile Include="DrAtomGet.cs" />
+    <Compile Include="DrAtomPut.cs" />
+    <Compile Include="DrContext.cs" />
+    <Compile Include="IIndicatesOperation.cs" />
+    <Compile Include="OperationEnvironment.cs" />
+    <Compile Include="OperationTrace.cs" />
+    <Compile Include="DataRequest.cs" />
+    <Compile Include="DataRequestConst.cs" />
+    <Compile Include="DataRequestEnums.cs" />
+    <Compile Include="DataRequestException.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="Base\Base.csproj">
+      <Project>{9591D310-393E-4E87-8B5C-568D8901C8E7}</Project>
+      <Name>Base</Name>
+    </ProjectReference>
+    <ProjectReference Include="Ftp\Ftp.csproj">
+      <Project>{20276125-1CFC-47AA-ABB4-51F93BE2586A}</Project>
+      <Name>Ftp</Name>
+    </ProjectReference>
+  </ItemGroup>
+</Project>
