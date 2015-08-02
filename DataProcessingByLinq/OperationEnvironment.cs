@@ -9,6 +9,7 @@ namespace DataProcessingByLinq
         public T Val { get; private set; }
         private OperationTrace _trace;
 		private bool verbose = true;
+		private bool canContinue = false;
 
         public OperationEnvironment()
         {
@@ -25,11 +26,17 @@ namespace DataProcessingByLinq
 			return this;
 		}
 
-        public OperationEnvironment(T val, OperationTrace trace)
-        {
-            Val = val;
-            _trace = trace;
-        }
+		public OperationEnvironment(T val, OperationTrace trace)
+		{
+			Val = val;
+			_trace = trace;
+		}
+
+		public OperationEnvironment<T> SetCanContinue(bool canContinue)
+		{
+			this.canContinue = canContinue;
+			return this;
+		}
 
         public OperationTrace Trace
         {
@@ -58,8 +65,11 @@ namespace DataProcessingByLinq
             {
                 Echo("can exec " + operationId + "? no - is redo");
                 return false;
-
             }
+			if (canContinue) {
+				Echo("can exec " + operationId + "? no - sequence terminated due to negative where condition");
+				return false;
+			}
 			Echo("can exec " + operationId + "? yes");
             return true;
         }
@@ -99,28 +109,28 @@ namespace DataProcessingByLinq
         }
 
 		public static OperationEnvironment<R> Exec<T, R>(this OperationEnvironment<T> src,
-			Func<T, R> selectValue)
+			Func<T, R> f)
 		{
-			return SelectMany(src, x => selectValue(src.Val).AsOperationEnvironment());
+			return SelectMany(src, x => f(src.Val).AsOperationEnvironment());
 
 		}
 
         public static OperationEnvironment<R> Select<T, R>(this OperationEnvironment<T> src,
-                                                          Func<T, R> selectValue)
+                                                          Func<T, R> f)
         {
-            return SelectMany(src, x => selectValue(src.Val).AsOperationEnvironment());
+            return SelectMany(src, x => f(src.Val).AsOperationEnvironment());
 
         }
 
         private static OperationEnvironment<R> InvokeSave<T, R>(OperationEnvironment<T> src,
-                                                              Func<T, OperationEnvironment<R>> selectValue)
+                                                              Func<T, OperationEnvironment<R>> f)
         {
             OperationEnvironment<R> dest;
             if (!src.HasException)
             {
                 try
                 {
-                    dest = selectValue(src.Val).Merge(src);
+                    dest = f(src.Val).Merge(src);
                 }
                 catch (DataRequestException e)
                 {
@@ -136,7 +146,7 @@ namespace DataProcessingByLinq
         }
 
         public static OperationEnvironment<R> SelectMany<T, R>(this OperationEnvironment<T> src,
-                                                              Func<T, OperationEnvironment<R>> selectValue)
+                                                              Func<T, OperationEnvironment<R>> f)
         {
             OperationEnvironment<R> dest;
 
@@ -146,31 +156,39 @@ namespace DataProcessingByLinq
                 operationVal.CanExecuteCallback = (src.CanExecute);
             }
 
-            dest = InvokeSave(src, selectValue);
+            dest = InvokeSave(src, f);
 
             IIndicatesOperation destVal = dest.Val as IIndicatesOperation;
             if (destVal != null)
             {
                 dest.NoteExecutedOperation(destVal.OperationId);
             }
-
-
+				
             return dest;
         }
 
-
         public static OperationEnvironment<R> SelectMany<T, V, R>(this OperationEnvironment<T> src,
-                                                                    Func<T, OperationEnvironment<V>> selectValue,
+                                                                    Func<T, OperationEnvironment<V>> f,
                                                                     Func<T, V, R> selectResult)
         {
             return src
                        .SelectMany(
-                                   x => selectValue(x)
+                                   x => f(x)
                                                       .SelectMany(
                                                                   y => selectResult(x, y).InstanceWithTemplate(src)
                                                                  )
                                   );
         }
+
+		public static OperationEnvironment<T> Where<T>(this OperationEnvironment<T> source, Func<T, bool> predicate)
+		{
+			return source.SetCanContinue (! predicate.Invoke(source.Val));
+		}
+
+		public static OperationEnvironment<T> Where<T>(this OperationEnvironment<T> source, Func<T, int, bool> predicate)
+		{
+			return Where(source, (T src) => predicate.Invoke(src, 0));
+		}
     }
 
 }

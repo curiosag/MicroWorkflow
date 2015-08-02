@@ -18,10 +18,30 @@ namespace DataProcessingByLinq
 		{
 
 			return from t in (from s in (from r in env
-			                             select r.DrPut (DrKindOfFile.ProviderRequest))
-			                  select s.DrGet (DrKindOfFile.ProviderResultData))
-			       select t.DrCheckTkResult (t);
+				select r.DrPut (DrKindOfFile.ProviderRequest))
+				select s.DrGet (DrKindOfFile.ProviderResultData))
+				select t.DrCheckTkResult (t);
 				
+		}
+
+		private static OperationEnvironment<DrContext> RunSelectWhere (OperationEnvironment<DrContext> env)
+		{
+			return from v in (from u in (from t in (from s in (from r in env
+				select r.DrPut (DrKindOfFile.ProviderRequest))
+				select s.DrGet (DrKindOfFile.ProviderResultData))
+				select t.DrCheckTkResult (t))
+				where u.ResultStatus == DrResultStatus.ok
+				select u)
+				select v.DrGet (DrKindOfFile.ProviderRequest);
+		}
+
+		private static OperationEnvironment<DrContext> RunSelectWhereDesugared (OperationEnvironment<DrContext> e)
+		{
+			return e.Select (x => x.DrPut (DrKindOfFile.ProviderRequest))
+				.Select (x => x.DrGet (DrKindOfFile.ProviderResultData))
+				.Select (x => x.DrCheckTkResult (x))
+				.Where (x => x.ResultStatus == DrResultStatus.ok)
+				.Select (x => x.DrGet (DrKindOfFile.ProviderRequest));
 		}
 
 		private static OperationEnvironment<DrContext> RunNestedSelectUnsugared (OperationEnvironment<DrContext> env)
@@ -45,7 +65,11 @@ namespace DataProcessingByLinq
 			var q12 = UserFeedback.Verbose ("re-run nested select in new environment, with this trace as high water mark:" + Const.Eol + partialTrace, 
 				          () => RunNestedSelect (getNewEnvironment (def, partialTrace)));
 				
+			Const.checkTkResultStatus = DrResultStatus.ok;
+			var q21 = UserFeedback.Verbose ("select with where clause, positive result", () => RunSelectWhere (getNewEnvironment (def, "")));
 
+			Const.checkTkResultStatus = DrResultStatus.emptyResult;
+			var q22 = UserFeedback.Verbose ("select with where clause, negative result", () => RunSelectWhereDesugared (getNewEnvironment (def, "")));
 
 
 		}

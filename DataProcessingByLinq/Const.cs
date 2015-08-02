@@ -4,7 +4,8 @@ namespace DataProcessingByLinq
 {
 	public class Const
 	{
-		public static string Eol = "";
+		public static string Eol = "\n";
+		public static DrResultStatus checkTkResultStatus = DrResultStatus.ok;
 	}
 }
 

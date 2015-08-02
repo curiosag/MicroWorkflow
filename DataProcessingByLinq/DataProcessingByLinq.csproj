@@ -46,6 +46,7 @@
     <Compile Include="DataRequestEnums.cs" />
     <Compile Include="DataRequestException.cs" />
     <Compile Include="UserFeedback.cs" />
+    <Compile Include="DrResultStatus.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="Base\Base.csproj">

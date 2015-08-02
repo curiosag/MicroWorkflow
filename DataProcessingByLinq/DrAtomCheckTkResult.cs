@@ -15,6 +15,7 @@ namespace DataProcessingByLinq
             {
 
             }
+			next.ResultStatus = Const.checkTkResultStatus; 
             return next;
             //----------------------------
             
