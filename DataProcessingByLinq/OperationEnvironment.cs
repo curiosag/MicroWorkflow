@@ -8,6 +8,7 @@ namespace DataProcessingByLinq
 
         public T Val { get; private set; }
         private OperationTrace _trace;
+		private bool verbose = true;
 
         public OperationEnvironment()
         {
@@ -17,6 +18,12 @@ namespace DataProcessingByLinq
         {
             Val = val;
         }
+
+		public OperationEnvironment<T> SetVerbose(bool b)
+		{
+			verbose = b;
+			return this;
+		}
 
         public OperationEnvironment(T val, OperationTrace trace)
         {
@@ -39,15 +46,21 @@ namespace DataProcessingByLinq
             return this;
         }
 
+		private void Echo(string msg)
+		{
+			if (verbose)
+				Console.WriteLine (msg);
+		}
+
         public bool CanExecute(string operationId)
         {
             if (Trace.IsRedo(operationId))
             {
-                Console.WriteLine("can exec " + operationId + "? no - is redo");
+                Echo("can exec " + operationId + "? no - is redo");
                 return false;
 
             }
-            Console.WriteLine("can exec " + operationId + "? yes");
+			Echo("can exec " + operationId + "? yes");
             return true;
         }
 

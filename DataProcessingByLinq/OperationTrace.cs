@@ -25,7 +25,7 @@ namespace DataProcessingByLinq
             }
             return Trace;
         }
-
+			
         public string Note(string operationId)
         {
 
