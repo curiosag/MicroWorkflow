@@ -8,7 +8,7 @@ using DataProcessingByLinq.Base;
 
 namespace DataProcessingByLinq.Ftp
 {
-	public class TimedOutExecution<T>
+	public class TimedOutRetry<T>
 	{
 		private readonly Stopwatch mStopwatch = new Stopwatch ();
 

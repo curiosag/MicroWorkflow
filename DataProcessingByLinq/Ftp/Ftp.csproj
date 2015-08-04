@@ -44,7 +44,7 @@
     <Compile Include="FtpSettings.cs" />
     <Compile Include="OnFtpFinishedCallback.cs" />
     <Compile Include="Stopwatch.cs" />
-    <Compile Include="TimedOutExecution.cs" />
+    <Compile Include="TimedOutRetry.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

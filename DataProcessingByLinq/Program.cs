@@ -9,107 +9,116 @@ namespace DataProcessingByLinq
 {
 	class Program
 	{
-		private static OperationEnvironment<DrContext> getNewEnvironment (Dr def, string executionState)
+		private static MW<OpInitial> CreateMwf (string executionState)
 		{
-			return new OperationEnvironment<DrContext> (new DrContext (def, new FileBasedFtpEmulator ()), new OperationTrace (executionState));
+			return MW<OpInitial>.CreateMwf (new DrContext (new FileBasedFtpEmulator ()), executionState);
 		}
 
-		private static OperationEnvironment<DrContext> RunNestedSelect (OperationEnvironment<DrContext> env)
+		private static MW<OpCheckResult> RunNestedSelect (MW<OpInitial> init)
 		{
 
-			return from t in (from s in (from r in env
-				select r.DrPut (DrKindOfFile.ProviderRequest))
-				select s.DrGet (DrKindOfFile.ProviderResultData))
-				select t.DrCheckTkResult (t);
+			return from t in (from s in (from r in init
+			                             select r.Put ("ProviderRequest"))
+			                  select s.Get ("ProviderResultData"))
+			       select t.CheckResult ("");
 				
 		}
 
-		private static OperationEnvironment<DrContext> RunSelectWhere (OperationEnvironment<DrContext> env)
+		private static MW<OpGet> RunSelectWhere (MW<OpInitial> env)
 		{
+
 			return from v in (from u in (from t in (from s in (from r in env
-				select r.DrPut (DrKindOfFile.ProviderRequest))
-				select s.DrGet (DrKindOfFile.ProviderResultData))
-				select t.DrCheckTkResult (t))
-				where u.ResultStatus == DrResultStatus.ok
-				select u)
-				select v.DrGet (DrKindOfFile.ProviderRequest);
+			                                                   select r.Put ("a"))
+			                                        select s.Get ("b"))
+			                             select t.CheckResult ("c"))
+			                  where u.OpStatus == DrResultStatus.ok
+			                  select u)
+			       select v.Get ("d");
 		}
 
-		private static OperationEnvironment<DrContext> RunSelectWhereDesugared (OperationEnvironment<DrContext> e)
+		private static MW<OpGet> RunSelectWhereDesugared (MW<OpInitial> e)
 		{
-			return e.Select (x => x.DrPut (DrKindOfFile.ProviderRequest))
-				.Select (x => x.DrGet (DrKindOfFile.ProviderResultData))
-				.Select (x => x.DrCheckTkResult (x))
-				.Where (x => x.ResultStatus == DrResultStatus.ok)
-				.Select (x => x.DrGet (DrKindOfFile.ProviderRequest));
+			return e.Select (x => x.Put ("a"))
+				.Select (x => x.Get ("b"))
+				.Select (x => x.CheckResult ("x"))
+				.Where (x => x.OpStatus == DrResultStatus.ok)
+				.Select (x => x.Get ("c"));
 		}
 
-		private static OperationEnvironment<DrContext> RunNestedSelectUnsugared (OperationEnvironment<DrContext> env)
+		private static MW<OpCheckResult> RunNestedSelectUnsugared<T> (MW<T> env) where T: Operation
 		{
-			return env.Select (x => x.DrPut (DrKindOfFile.ProviderRequest))
-				.Select (x => x.DrGet (DrKindOfFile.ProviderResultData))
-				.Select (x => x.DrCheckTkResult (x));
+			return env.Select (x => x.Put ("a"))
+				.Select (x => x.Get ("b"))
+				.Select (x => x.CheckResult ("x"));
 		}
 
-		public static void RunDemoProcessing (Dr def)
+		public static void RunDemoProcessing (BaseDr dr)
 		{
-			var q10 = UserFeedback.Verbose ("nested select", () => RunNestedSelect (getNewEnvironment (def, "")));
+			var q10 = UserFeedback.Verbose ("nested select", () => RunNestedSelect (CreateMwf (Const.EmptyTrace)));
 
-			var q11 = UserFeedback.Verbose ("same select, unsugared and in sequence", () => RunNestedSelectUnsugared (q10));
+			var q11 = UserFeedback.Verbose ("same select, unsugared and in same wf", () => RunNestedSelectUnsugared (q10));
 
-			q11 = UserFeedback.Verbose ("re-run nested select in new environment, with previous execution trace as high water mark", 
-				() => RunNestedSelect (getNewEnvironment (def, q11.Trace.HighWaterMark)));
+			q11 = UserFeedback.Verbose ("re-run nested select in new wf, with previous execution trace as high water mark", 
+				() => RunNestedSelect (CreateMwf (q11.Trace.HighWaterMark)));
 
-			string partialTrace = "DrPut_ProviderRequest()" + Const.Eol +	"DrGet_ProviderResultData()" + Const.Eol;
+			string partialTrace = "Put" + Const.Eol +	"Get" + Const.Eol;
 
-			var q12 = UserFeedback.Verbose ("re-run nested select in new environment, with this trace as high water mark:" + Const.Eol + partialTrace, 
-				          () => RunNestedSelect (getNewEnvironment (def, partialTrace)));
+			var q12 = UserFeedback.Verbose ("re-run nested select in new Wf, with this trace as high water mark:" + Const.Eol + partialTrace, 
+				          () => RunNestedSelect (CreateMwf (partialTrace)));
 				
 			Const.checkTkResultStatus = DrResultStatus.ok;
-			var q21 = UserFeedback.Verbose ("select with where clause, positive result", () => RunSelectWhere (getNewEnvironment (def, "")));
+			var q21 = UserFeedback.Verbose ("select with where clause, positive result, new wf", () => RunSelectWhere (CreateMwf (Const.EmptyTrace)));
 
 			Const.checkTkResultStatus = DrResultStatus.emptyResult;
-			var q22 = UserFeedback.Verbose ("select with where clause, negative result", () => RunSelectWhereDesugared (getNewEnvironment (def, "")));
+			var q22 = UserFeedback.Verbose ("select with where clause, negative result, new wf", () => RunSelectWhereDesugared (CreateMwf (Const.EmptyTrace)));
 
-
+			moreSyntaxVariations ();
 		}
-			
-		private void moreSyntaxVariations(){
 
-			var env = getNewEnvironment (null, "").SetVerbose (false);
+		private static void moreSyntaxVariations ()
+		{
 
-			// in each step a new environment is created (InstanceWithTemplate), conserving the state of the step
-			var q6 = from d in env.Select (x => x.DrPut (DrKindOfFile.ProviderRequest)).InstanceWithTemplate (env)
-				from s in env.Select (x => x.DrGet (DrKindOfFile.ProviderRequestStatus)).InstanceWithTemplate (env)
-				from t in env.Select (x => x.DrGet (DrKindOfFile.ProviderResultData)).InstanceWithTemplate (env)
-				select new { upload = d, status = s, data = t };
+			var env = CreateMwf (Const.EmptyTrace).SetVerbose (true);
 
-			var q6a = from u in env.Exec (x => x.DrPut (DrKindOfFile.ProviderRequest))
-				from s in env.Exec (x => x.DrGet (DrKindOfFile.ProviderRequestStatus))
-				from d in env.Exec (x => x.DrGet (DrKindOfFile.ProviderResultData))
-				let c = env.Exec (x => d.DrCheckTkResult (s))
-				select new { name = "checked result data", val = c.Val.DataPath };
+			UserFeedback.EchoHeader ("let sequence in new wf");
+			var q7 =  
+				     from r in env.Select (x => x.Put ("ProviderRequest"))
+			      let s = env.Select (x => x.Get ("ProviderRequestStatus")).Val
+			      let d = env.Select (x => x.Get ("ProviderResultData")).Val
+			      select new { status = s, data = d };
 
-			var q7 = from r in env.Select (x => x.DrPut (DrKindOfFile.ProviderRequest))
-				let s = env.Select (x => x.DrGet (DrKindOfFile.ProviderRequestStatus)).Val
-				let d = env.Select (x => x.DrGet (DrKindOfFile.ProviderResultData)).Val
-				select new { status = s, data = d };
+			UserFeedback.EchoState (env);
 
-			var q8 = from u in env.Select (x => x.DrPut (DrKindOfFile.ProviderRequest))
-				from s in env.Select (x => x.DrGet (DrKindOfFile.ProviderRequestStatus))
-				from d in env.Select (x => x.DrGet (DrKindOfFile.ProviderResultData))
-				let c = env.Select (x => d.DrCheckTkResult (d))
-				select new { name = "checked result data", val = d.DataPath };
+			UserFeedback.EchoHeader ("more selects on env, same wf");
 
-			var q9 = from u in env.Select (x => x.DrPut (DrKindOfFile.ProviderRequest))
-				from s in env.Select (x => x.DrGet (DrKindOfFile.ProviderRequestStatus))
-				from d in env.Select (x => x.DrGet (DrKindOfFile.ProviderResultData))
-				select d.DrCheckTkResult (s);
+			var q8 = 
+				from u in env.Select (x => x.Put ("ProviderRequest"))
+			         from s in env.Select (x => x.Get ("ProviderRequestStatus"))
+			         from d in env.Select (x => x.Get ("ProviderResultData"))
+			         let c = env.Select (x => d.CheckResult ("d"))
+				select new { name = "checked result data", val = d.OpStatus };
 
-			var supload = env.Select (x => x.DrPut (DrKindOfFile.ProviderRequest));
-			var downloadStatus = env.Select (x => x.DrPut (DrKindOfFile.ProviderRequestStatus));
-			var downloadData = downloadStatus.Select (x => x.DrGet (DrKindOfFile.ProviderResultData));
-			var checkedData = downloadData.Select (x => x.DrCheckTkResult (downloadStatus.Val));
+			UserFeedback.EchoState (env);
+
+
+			UserFeedback.EchoHeader ("and yet more");
+
+			var q9 = 
+				from u in env.Select (x => x.Put ("ProviderRequest"))
+			         from s in env.Select (x => x.Get ("ProviderRequestStatus"))
+			         from d in env.Select (x => x.Get ("ProviderResultData"))
+				select d.CheckResult ("s");
+
+			UserFeedback.EchoState (env);
+
+			UserFeedback.EchoHeader ("some solitary operations");
+
+			var supload = env.Select (x => x.Put ("ProviderRequest"));
+			var downloadStatus = env.Select (x => x.Put ("ProviderRequestStatus"));
+			var downloadData = downloadStatus.Select (x => x.Get ("ProviderResultData"));
+			var checkedData = downloadData.Select (x => x.CheckResult ("x"));
+
+			UserFeedback.EchoState (env);
 
 		}
 
@@ -117,11 +126,10 @@ namespace DataProcessingByLinq
 		{
 			// to show, how a request may look like, isn't actually used now
 			var request = new BaseDr (Provider.Bloomberg, 
-				"BB request",
-				"ISIN",
-				new List<string> (),
-				new List<string> ());
-
+				              "BB request",
+				              "ISIN",
+				              new List<string> (),
+				              new List<string> ());
 			RunDemoProcessing (request);
 		}
 

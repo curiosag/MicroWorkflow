@@ -134,7 +134,7 @@ namespace DataProcessingByLinq.Ftp
       CheckArgumentsGet(remotePath, result);
       CheckArgumentTimeout(secsTimeout);
 
-      result = new TimedOutExecution<Stream>().Execute(new TimeSpan(0, 0, secsTimeout), () => TimeoutDelegateTryGet(remotePath, result),
+      result = new TimedOutRetry<Stream>().Execute(new TimeSpan(0, 0, secsTimeout), () => TimeoutDelegateTryGet(remotePath, result),
                                DebugFormat.Format("Timeout ({0:g} secs) hit while trying to get file {1}", secsTimeout, remotePath));    
     }
 

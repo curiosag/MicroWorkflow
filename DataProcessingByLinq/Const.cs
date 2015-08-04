@@ -6,6 +6,7 @@ namespace DataProcessingByLinq
 	{
 		public static string Eol = "\n";
 		public static DrResultStatus checkTkResultStatus = DrResultStatus.ok;
+		public static string EmptyTrace = "";
 	}
 }
 

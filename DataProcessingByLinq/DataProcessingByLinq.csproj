@@ -33,13 +33,8 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="Const.cs" />
-    <Compile Include="DrAtom.cs" />
-    <Compile Include="DrAtomCheckTkResult.cs" />
-    <Compile Include="DrAtomGet.cs" />
-    <Compile Include="DrAtomPut.cs" />
     <Compile Include="DrContext.cs" />
     <Compile Include="IIndicatesOperation.cs" />
-    <Compile Include="OperationEnvironment.cs" />
     <Compile Include="OperationTrace.cs" />
     <Compile Include="DataRequest.cs" />
     <Compile Include="DataRequestConst.cs" />
@@ -47,6 +42,12 @@
     <Compile Include="DataRequestException.cs" />
     <Compile Include="UserFeedback.cs" />
     <Compile Include="DrResultStatus.cs" />
+    <Compile Include="Operation.cs" />
+    <Compile Include="OpPut.cs" />
+    <Compile Include="OpGet.cs" />
+    <Compile Include="OpCheckResult.cs" />
+    <Compile Include="OpInitial.cs" />
+    <Compile Include="MW.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="Base\Base.csproj">

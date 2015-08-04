@@ -5,17 +5,20 @@ namespace DataProcessingByLinq
 {
     public class OperationTrace
     {
-        public string Trace { get; private set; }
-        public string HighWaterMark { get; set; }
 
-        public OperationTrace()
-        {
-        }
+        public string Trace { get; private set; }
+		public string HighWaterMark { get; private set; }
 
         public OperationTrace(string highWaterMark)
         {
+			Trace = "";
             HighWaterMark = highWaterMark;
         }
+
+		public OperationTrace(OperationTrace traceTillNow): this(traceTillNow.HighWaterMark)
+		{
+			Trace = traceTillNow.Trace;
+		}
 
         private string TraceExtendedBy(string operationId)
         {
@@ -41,15 +44,6 @@ namespace DataProcessingByLinq
         {
             return HighWaterMark.StartsWith(TraceExtendedBy(operationId));
         }
-
-        public Exception Exception { get; set; }
-        public bool HasException
-        {
-            get
-            {
-                return Exception != null;
-            }
-        }
-
+			
     }
 }

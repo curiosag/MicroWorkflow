@@ -18,11 +18,11 @@ namespace DataProcessingByLinq
 			Console.WriteLine (msg, arg);
 		}
 
-		public static void EchoState (OperationEnvironment<DrContext> env)
+		public static void EchoState<T> (MW<T> wf)   where T: IIndicatesOperation
 		{
-			ArgumentCheck.Assigned (env, "env");
+			ArgumentCheck.Assigned (wf, "env");
 
-			var e = env.Exception;
+/*			var e = wf.Exception;
 
 			if (e != null) {
 				Echo ();
@@ -30,17 +30,21 @@ namespace DataProcessingByLinq
 				Echo (e.Message);
 				Echo ();
 			}
-
+*/
 			Echo ("--- executionTrace ---");
 
-			Echo (env.Trace.Trace);
+			Echo (wf.Trace.Trace);
 		}
 
-		public static OperationEnvironment<DrContext> Verbose(string msg, Func<OperationEnvironment<DrContext>> f)
-		{
+		public static void EchoHeader(string msg){
 			Echo ("-----------------------------------------------------------------------------------------");
 			Echo (msg);
 			Echo ();
+		}
+
+		public static MW<T> Verbose<T>(string msg, Func<MW<T>> f)   where T: IIndicatesOperation
+		{
+			EchoHeader (msg);
 
 			var q = f.Invoke();
 
@@ -48,7 +52,6 @@ namespace DataProcessingByLinq
 
 			return q;
 		}
-
 
 	}
 }
